@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TheRealest — GSAP Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: #f5f4f0;
+      color: #111;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── STAGE ── */
+    .stage {
+      position: fixed;
+      inset: 0;
+    }
+
+    /* ── ORBITAL media defaults ── */
+    .media {
+      position: absolute;
+      top: calc(50% - 4vw);
+      left: calc(50% - 4vw);
+      width: 8vw;
+      height: 8vw;
+      object-fit: contain;
+      will-change: transform;
+      border-radius: 1.4vw;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* ── SPHERE media overrides ── */
+    .stage.is-sphere .media {
+      top: 50%;
+      left: 50%;
+      width: 10vw;
+      height: 10vw;
+      margin-left: -5vw;
+      margin-top: -5vw;
+      object-fit: cover;
+      border-radius: 0.4vw;
+    }
+
+    /* ── SPHERE wrappers ── */
+    .sphere-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .center-logo {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      width: clamp(100px, 12vw, 180px);
+      height: auto;
+      z-index: 10;
+    }
+
+    @media (max-width: 768px) {
+      .media {
+        top: calc(50% - 10vw);
+        left: calc(50% - 10vw);
+        width: 20vw;
+        height: 20vw;
+      }
+      .stage.is-sphere .media {
+        top: 50%;
+        left: 50%;
+        width: 25vw;
+        height: 25vw;
+        margin-left: -12.5vw;
+        margin-top: -12.5vw;
+      }
+    }
+
+    /* ── DARK THEME (Dual Carousel) ── */
+    body.theme-dark { background: #121212; color: #f1f1f1; }
+    body.theme-dark #nav {
+      background: rgba(20, 20, 20, 0.88);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    body.theme-dark .nav-btn { color: rgba(255, 255, 255, 0.35); }
+    body.theme-dark .nav-btn:hover { color: #f1f1f1; background: rgba(255, 255, 255, 0.08); }
+    body.theme-dark .nav-btn.active { background: #f1f1f1; color: #121212; border-color: #f1f1f1; }
+
+    /* ── DUAL CAROUSEL ── */
+    .mwg_effect040 .pin-height { height: 500vh; }
+    .mwg_effect040 .container {
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    .mwg_effect040 .parent-circle {
+      width: 80vw;
+      height: 80vw;
+      position: absolute;
+      top: 50%;
+      transform: translate(0, -50%);
+    }
+    .mwg_effect040 .parent-circle-left { right: 52%; }
+    .mwg_effect040 .parent-circle-right { left: 52%; }
+    .mwg_effect040 .circle { position: absolute; inset: 0; }
+    .mwg_effect040 .label {
+      position: absolute;
+      right: 50%;
+      top: 100%;
+      transform: translate(0, -50%);
+      transform-origin: 100% 50%;
+      font: 500 normal 4vw/normal 'Inter', sans-serif;
+      white-space: nowrap;
+    }
+    .mwg_effect040 .media {
+      width: 12vw;
+      height: 12vw;
+      display: block;
+      object-fit: cover;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(0, -50%);
+      transform-origin: 0 50%;
+      border-radius: 0.8vw;
+      filter: drop-shadow(0px 4px 24px rgba(0,0,0,0.25));
+      /* reset global .media overrides */
+      margin: 0;
+      aspect-ratio: auto;
+      will-change: transform;
+    }
+
+    /* ── INFINITE CIRCULAR ── */
+    .mwg_effect023 { height: 100vh; position: relative; }
+    .mwg_effect023 .container {
+      position: absolute;
+      width: 300vw;
+      height: 300vw;
+      left: -100vw;
+      will-change: transform;
+    }
+    .mwg_effect023 .inner-media {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .mwg_effect023 .media {
+      position: static;
+      top: auto; left: auto;
+      width: 20vw;
+      height: 26vw;
+      margin: 50vh 0 0;
+      object-fit: contain;
+      object-position: 50% 100%;
+      will-change: transform;
+      border-radius: 0;
+    }
+    .mwg_effect023 .header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      padding: 25px;
+      font: 500 normal 2.2vw/normal 'Inter', sans-serif;
+      letter-spacing: -0.03em;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .mwg_effect023 .header p:last-child { text-align: right; }
+
+    /* ── IMAGE SCROLL FLOW ── */
+    .mwg_effect072 { overflow: hidden; }
+    .mwg_effect072 .scroll { display: none; }
+    .mwg_effect072 .pin-height { height: 500vh; }
+    .mwg_effect072 .container {
+      height: 100vh;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .mwg_effect072 .media {
+      position: absolute;
+      top: 50%;
+      margin-top: -10vw;
+      left: auto;
+      right: 0;
+      width: 20%;
+      height: auto;
+      aspect-ratio: 1;
+      object-fit: contain;
+      transform: scale(0, 0);
+      border-radius: 0;
+      margin-left: 0;
+    }
+
+    /* ── LETTER SWAP ── */
+    .stage.is-letter-swap .center-logo { visibility: hidden; }
+
+    .mwg_effect093 {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+    .mwg_effect093 .word {
+      display: flex;
+      font-size: 10vw;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .mwg_effect093 .letter { position: relative; }
+    .mwg_effect093 .letter:has(.created-media) { color: transparent; }
+    .mwg_effect093 .medias {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+    .mwg_effect093 .media {
+      width: 1px;
+      height: 1px;
+      visibility: hidden;
+      position: absolute;
+    }
+    .mwg_effect093 .created-media {
+      position: absolute;
+      width: 9vw;
+      height: auto;
+      top: 50%;
+      left: 50%;
+      border-radius: 1vw;
+    }
+
+    /* ── PILL NAV ── */
+    #nav {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      translate: -50% 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 244, 240, 0.88);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 100px;
+      padding: 7px 10px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 6px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-btn {
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+      border-radius: 100px;
+      padding: 6px 14px;
+      background: transparent;
+      color: rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover {
+      color: #111;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-btn.active {
+      background: #111;
+      color: #f5f4f0;
+      border-color: #111;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stage" id="stage">
+    <img class="media" src="../img/TA0288093_1 1.png" alt="">
+    <img class="media" src="../img/TA0290102_7 1.png" alt="">
+    <img class="media" src="../img/TA0291354_2480-Edit 1.png" alt="">
+    <img class="media" src="../img/TA0291447_2448-Edit 1.png" alt="">
+    <img class="media" src="../img/TA0294013_A 1.png" alt="">
+    <img class="media" src="../img/TA0294014_1 1.png" alt="">
+    <img class="media" src="../img/TA0294020_A 1.png" alt="">
+    <img class="media" src="../img/WEB_TR00142086_A 1.png" alt="">
+    <img class="media" src="../img/Case_11-min 1.png" alt="">
+    <img class="media" src="../img/IMG01 1.png" alt="">
+    <img class="media" src="../img/65156f23-c426-4d9d-b05e-6e7f16da4d3d 1.png" alt="">
+    <img class="media" src="../img/9503b1e3-b194-422a-b9a0-3e3fddcdea04 1.png" alt="">
+    <img class="media" src="../img/TA0291289_811-Edit 1.png" alt="">
+    <img class="media" src="../img/TA0291293_867-Edit 1.png" alt="">
+    <img class="media" src="../img/d08c6b10-8e6a-4019-af15-6f80f5e8dcae 1.png" alt="">
+
+    <svg class="center-logo" viewBox="0 0 86 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5.27645 2.55401V15.7445H2.72415V2.55401H0V0.258854H7.95734V2.55401H5.27645Z" fill="currentColor"/>
+      <path d="M13.9837 15.7445V9.05255H11.2596V15.7445H8.70728V0.258854H11.2596V6.77902H13.9837V0.258854H16.536V15.7445H13.9837Z" fill="currentColor"/>
+      <path d="M20.6962 6.65044H23.6992V8.81702H20.6962V13.4494H24.9429V15.7445H18.1439V0.258854H24.771V2.51195H20.6962V6.65044Z" fill="currentColor"/>
+      <path d="M35.0234 15.7445L33.2642 9.3097H32.3425V15.7445H29.7686V0.258854H33.7797C36.7826 0.258854 37.3834 2.2536 37.3834 4.89122C37.3834 7.52885 36.8259 8.32314 35.5173 8.9444L37.5336 15.7433H35.0246L35.0234 15.7445ZM33.3507 7.25127C34.5091 7.25127 34.8515 6.71533 34.8515 4.82754C34.8515 2.93974 34.5091 2.4038 33.3507 2.4038H32.3425V7.25127H33.3507Z" fill="currentColor"/>
+      <path d="M41.2207 6.65044H44.2236V8.81702H41.2207V13.4494H45.4673V15.7445H38.6683V0.258854H45.2967V2.51195H41.2207V6.65044Z" fill="currentColor"/>
+      <path d="M48.5981 0.258854H51.6227L54.3252 15.7433H51.8582L51.4076 12.5265H48.8132L48.3626 15.7433H45.8956L48.5981 0.258854ZM49.1557 10.3179H51.0651L50.1218 3.9263L49.1569 10.3179H49.1557Z" fill="currentColor"/>
+      <path d="M57.7338 13.471H61.6152V15.7445H55.1815V0.258854H57.7338V13.471Z" fill="currentColor"/>
+      <path d="M65.1336 6.65044H68.1365V8.81702H65.1336V13.4494H69.3802V15.7445H62.5813V0.258854H69.2084V2.51195H65.1336V6.65044Z" fill="currentColor"/>
+      <path d="M74.7202 7.0561C76.3076 8.62185 77.5297 9.95208 77.5297 12.0754C77.5297 14.4775 75.9639 16 73.7121 16C71.4602 16 69.8944 14.3489 69.8944 12.0538V10.4448H72.2749V11.8603C72.2749 13.0608 72.6822 13.7481 73.6904 13.7481C74.3766 13.7481 75.0627 13.4261 75.0627 12.2677C75.0627 10.8305 73.9908 9.86557 72.6822 8.62185C71.3953 7.37814 70.0014 5.9626 70.0014 3.75396C70.0014 1.78085 71.0949 0 73.7121 0C75.9639 0 77.3362 1.3086 77.3362 4.20338V5.18994H74.9558V4.33196C74.9558 2.7662 74.5268 2.20864 73.7121 2.20864C72.8541 2.20864 72.4683 2.85152 72.4683 3.64581C72.4683 4.84626 73.3696 5.72587 74.7202 7.0561Z" fill="currentColor"/>
+      <path d="M82.9568 2.55401V15.7445H80.4044V2.55401H77.6803V0.258854H85.6376V2.55401H82.9568Z" fill="currentColor"/>
+    </svg>
+  </div>
+
+  <!-- ── PILL NAV ── -->
+  <nav id="nav"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/Observer.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/ScrollTrigger.min.js"></script>
+
+  <script>
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CONFIGS
+  // ─────────────────────────────────────────────────────────────────────────────
+  const CONFIGS = [
+
+    // ── 01 ORBITAL ────────────────────────────────────────────────────────────
+    {
+      name: 'Orbital',
+
+      init(medias) {
+        let w = window.innerWidth
+        let h = window.innerHeight
+        const count = medias.length
+        let incr = 0, isWheeling
+
+        const baseAngles = Array.from({ length: count }, (_, i) => (i / count) * Math.PI * 2)
+        const state = { acceleration: 0, rayon: 0 }
+        const setAcceleration = gsap.quickTo(state, 'acceleration', { duration: 0.3, ease: 'power1' })
+        const setRayon        = gsap.quickTo(state, 'rayon',        { duration: 0.6, ease: 'power1' })
+        const quotients = Array.from(medias, () => (Math.random() - 0.5) / 2)
+
+        const onWheel = (e) => {
+          const delta = e.deltaY
+          setAcceleration(delta / 800)
+          setRayon(delta / 40)
+          window.clearTimeout(isWheeling)
+          isWheeling = setTimeout(() => { setAcceleration(0); setRayon(0) }, 120)
+        }
+        window.addEventListener('wheel', onWheel)
+        this._offWheel = () => window.removeEventListener('wheel', onWheel)
+
+        this._obs = Observer.create({
+          target: window,
+          type: 'touch',
+          onChange: (e) => {
+            const delta = e.deltaY
+            setAcceleration(delta / 200)
+            setRayon(delta / 10)
+            window.clearTimeout(isWheeling)
+            isWheeling = setTimeout(() => { setAcceleration(0); setRayon(0) }, 120)
+          },
+        })
+
+        const onResize = () => { w = window.innerWidth; h = window.innerHeight }
+        window.addEventListener('resize', onResize)
+        this._offResize = () => window.removeEventListener('resize', onResize)
+
+        const tick = (time) => {
+          incr += state.acceleration
+          medias.forEach((el, i) => {
+            const angle = (time + incr) / 3 + baseAngles[i]
+            gsap.set(el, {
+              x: Math.sin(angle) * w / (2.4 + quotients[i] * state.rayon),
+              y: Math.cos(angle) * h / (2.7 + quotients[i] * state.rayon),
+              rotate: quotients[i] * state.rayon * 20,
+            })
+          })
+        }
+        this._tick = tick
+        gsap.ticker.add(tick)
+      },
+
+      destroy() {
+        if (this._tick)      gsap.ticker.remove(this._tick)
+        if (this._offWheel)  this._offWheel()
+        if (this._offResize) this._offResize()
+        if (this._obs)       this._obs.kill()
+        this._tick = this._offWheel = this._offResize = this._obs = null
+      },
+    },
+
+    // ── 02 3D SPHERE ──────────────────────────────────────────────────────────
+    {
+      name: '3D Sphere',
+
+      init(medias) {
+        this._medias = medias
+        const stageEl = document.getElementById('stage')
+        stageEl.classList.add('is-sphere')
+
+        // Build sphere wrapper
+        const container = document.createElement('div')
+        container.className = 'sphere-container'
+        const sphereEl = document.createElement('div')
+        sphereEl.className = 'sphere'
+        container.appendChild(sphereEl)
+        stageEl.insertBefore(container, stageEl.querySelector('.center-logo'))
+        this._container = container
+
+        // Reparent images into sphere
+        medias.forEach(el => sphereEl.appendChild(el))
+
+        gsap.set(sphereEl, { transformStyle: 'preserve-3d' })
+        const isMobile = window.innerWidth <= 768
+        gsap.set(container, { perspective: window.innerWidth * (isMobile ? 0.7 : 0.5) })
+
+        // Distribute on sphere surface using golden angle
+        const total = medias.length
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+        const radius = window.innerWidth * (isMobile ? 0.3 : 0.2)
+        const positions = medias.map((_, index) => {
+          const y   = 1 - (2 * index) / (total - 1 || 1)
+          const phi = Math.acos(y) - Math.PI / 2
+          const theta = (index * goldenAngle) % (Math.PI * 2)
+          return {
+            x: Math.cos(phi) * Math.cos(theta),
+            y: Math.sin(phi),
+            z: Math.cos(phi) * Math.sin(theta),
+          }
+        })
+        this._positions = positions
+        this._radius = radius
+
+        // Rotation matrix state
+        const m = [1,0,0, 0,1,0, 0,0,1]
+        const mTmp = new Array(9).fill(0)
+        const R    = new Array(9).fill(0)
+        const smooth = { x: 0, y: 0 }
+        let prevX = 0, prevY = 0
+        this._smooth = smooth
+
+        function premultiply3x3(left) {
+          for (let i = 0; i < 3; i++) {
+            const a = left[i*3], b = left[i*3+1], c = left[i*3+2]
+            for (let j = 0; j < 3; j++) {
+              mTmp[i*3+j] = a*m[j] + b*m[3+j] + c*m[6+j]
+            }
+          }
+          for (let k = 0; k < 9; k++) m[k] = mTmp[k]
+        }
+
+        function updateMedias() {
+          const dY = (smooth.y - prevY) * Math.PI / 180
+          const dX = (smooth.x - prevX) * Math.PI / 180
+          prevY = smooth.y
+          prevX = smooth.x
+          if (dX !== 0 || dY !== 0) {
+            const cy = Math.cos(dY), sy = Math.sin(dY)
+            const cx = Math.cos(dX), sx = Math.sin(dX)
+            R[0]=cy;  R[1]=0;  R[2]=sy
+            R[3]=sx*sy; R[4]=cx; R[5]=-sx*cy
+            R[6]=-cx*sy; R[7]=sx; R[8]=cx*cy
+            premultiply3x3(R)
+          }
+          medias.forEach((el, i) => {
+            const p = positions[i]
+            const x = m[0]*p.x + m[1]*p.y + m[2]*p.z
+            const y = m[3]*p.x + m[4]*p.y + m[5]*p.z
+            const z = m[6]*p.x + m[7]*p.y + m[8]*p.z
+            el.style.transform = `translate3d(${x * radius}px, ${-y * radius}px, ${z * radius}px)`
+          })
+        }
+        updateMedias()
+
+        const quickY = gsap.quickTo(smooth, 'y', { duration: 1, ease: 'power2', onUpdate: updateMedias })
+        const quickX = gsap.quickTo(smooth, 'x', { duration: 1, ease: 'power2', onUpdate: updateMedias })
+        this._quickX = quickX
+        this._quickY = quickY
+
+        let isTouch = false
+        gsap.matchMedia().add('(hover: none)', () => { isTouch = true })
+        let incrY = 0, incrX = 0
+
+        this._obs = Observer.create({
+          target: container,
+          type: 'wheel,touch,pointer',
+          onWheel: (e) => {
+            incrY -= e.deltaY / 10
+            incrX -= e.deltaX / 10
+            quickY(incrX)
+            quickX(incrY)
+          },
+          onDrag: (e) => {
+            incrY += isTouch ? e.deltaY : e.deltaY / 4
+            incrX += isTouch ? e.deltaX : e.deltaX / 4
+            quickY(incrX)
+            quickX(incrY)
+          },
+        })
+      },
+
+      destroy() {
+        if (this._obs) this._obs.kill()
+        if (this._smooth) gsap.killTweensOf(this._smooth)
+
+        // Clear direct transforms
+        if (this._medias) this._medias.forEach(el => { el.style.transform = '' })
+
+        // Move medias back to stage
+        const stageEl = document.getElementById('stage')
+        const logo = stageEl.querySelector('.center-logo')
+        if (this._medias) this._medias.forEach(el => stageEl.insertBefore(el, logo))
+
+        // Remove sphere wrapper
+        if (this._container) this._container.remove()
+
+        stageEl.classList.remove('is-sphere')
+        this._obs = this._container = this._medias = this._smooth = null
+        this._quickX = this._quickY = null
+      },
+    },
+
+    // ── 03 LETTER SWAP ────────────────────────────────────────────────────────
+    {
+      name: 'Letter Swap',
+
+      init(medias) {
+        this._medias = medias
+        medias.forEach(el => { el.style.visibility = 'hidden' })
+
+        const stageEl = document.getElementById('stage')
+        stageEl.classList.add('is-letter-swap')
+
+        const section = document.createElement('section')
+        section.className = 'mwg_effect093'
+        section.innerHTML = `
+          <p class="word">Unrivaled</p>
+          <div class="medias">
+            <img class="media" src="../img-jerseys/1bc52a49-5bec-4358-9c70-64866776f3ce 1.png" alt="">
+            <img class="media" src="../img-jerseys/20744a95-e171-46e6-ad47-886a0cf17d1b (1) 1.png" alt="">
+            <img class="media" src="../img-jerseys/44a200c8-effa-4067-94e1-a0ea0d91eadb 1.png" alt="">
+            <img class="media" src="../img-jerseys/4d56c78d-7a17-4b19-96a9-0b60e2a7271b 1.png" alt="">
+            <img class="media" src="../img-jerseys/65156f23-c426-4d9d-b05e-6e7f16da4d3d (2) 1.png" alt="">
+            <img class="media" src="../img-jerseys/9503b1e3-b194-422a-b9a0-3e3fddcdea04 (1) 1.png" alt="">
+            <img class="media" src="../img-jerseys/adfa7019-1af2-4c4b-8bc6-d5bfb72ae6f5 1.png" alt="">
+            <img class="media" src="../img-jerseys/b75c9f7f-848f-4a7d-a092-d0fe6e5cb8f3 1.png" alt="">
+          </div>
+        `
+        stageEl.insertBefore(section, stageEl.querySelector('.center-logo'))
+        this._section = section
+
+        const mediaSrcs = Array.from(section.querySelectorAll('.medias .media'), el => el.src)
+        let mediaIndex = 0
+        const word = section.querySelector('.word')
+
+        function wrapLettersInSpan(element) {
+          element.innerHTML = element.textContent
+            .split('')
+            .map(char => char === ' ' ? '<span>&nbsp;</span>' : `<span class="letter">${char}</span>`)
+            .join('')
+        }
+        wrapLettersInSpan(word)
+
+        const letters = [...word.querySelectorAll('.letter')]
+        const overflows = new Array(letters.length).fill(0)
+        const mediaWidth = 0.095 * window.innerWidth
+        this._letters = letters
+        this._delayedCalls = []
+
+        const applyLetterOffsets = () => {
+          if (!letters.length) return
+          let sumLeft = 0
+          const targets = overflows.map((ov, i) => {
+            const sumRight = overflows.slice(i + 1).reduce((a, v) => a + v, 0)
+            const x = sumLeft - sumRight
+            sumLeft += ov
+            return x
+          })
+          gsap.to(letters, { x: i => targets[i], duration: 0.3, ease: 'back.out(3)', overwrite: 'auto' })
+        }
+
+        const createMedia = (letter) => {
+          const img = document.createElement('img')
+          img.src = mediaSrcs[mediaIndex]
+          img.classList.add('created-media')
+          letter.appendChild(img)
+
+          gsap.set(img, { yPercent: -50, xPercent: -50 })
+          gsap.from(img, { rotation: (Math.random() - 0.5) * 20, scale: 1.05, duration: 0.3, ease: 'back.out(2)' })
+
+          mediaIndex = (mediaIndex + 1) % mediaSrcs.length
+          const index = letters.indexOf(letter)
+          if (index === -1) return
+
+          const overflowX = Math.max(0, (mediaWidth - letter.getBoundingClientRect().width) / 2)
+          overflows[index] = Math.max(overflows[index], overflowX)
+          applyLetterOffsets()
+
+          const dc = gsap.delayedCall(1.2, () => {
+            const parent = img.parentElement
+            if (!parent) return
+            const idx = letters.indexOf(parent)
+            if (idx !== -1) overflows[idx] = 0
+            img.remove()
+            applyLetterOffsets()
+            gsap.from(parent, { rotation: (Math.random() - 0.5) * 20, scale: 1.05, duration: 0.3, ease: 'back.out(2)' })
+          })
+          this._delayedCalls.push(dc)
+        }
+
+        this._letterHandlers = letters.map(letter => {
+          const handler = () => { if (letter.children.length === 0) createMedia(letter) }
+          letter.addEventListener('mouseenter', handler)
+          return { letter, handler }
+        })
+      },
+
+      destroy() {
+        if (this._letterHandlers) this._letterHandlers.forEach(({ letter, handler }) => letter.removeEventListener('mouseenter', handler))
+        if (this._delayedCalls) this._delayedCalls.forEach(dc => dc.kill())
+        if (this._letters)  gsap.killTweensOf(this._letters)
+        if (this._section)  this._section.remove()
+
+        const stageEl = document.getElementById('stage')
+        stageEl.classList.remove('is-letter-swap')
+
+        if (this._medias) this._medias.forEach(el => { el.style.visibility = '' })
+        this._section = this._medias = this._letters = this._letterHandlers = this._delayedCalls = null
+      },
+    },
+
+    // ── 04 DUAL CAROUSEL ──────────────────────────────────────────────────────
+    {
+      name: 'Dual Carousel',
+
+      init(medias) {
+        this._medias = medias
+        medias.forEach(el => { el.style.visibility = 'hidden' })
+
+        document.getElementById('stage').style.display = 'none'
+        document.body.style.overflow = 'auto'
+        document.body.classList.add('theme-dark')
+
+        const section = document.createElement('section')
+        section.className = 'mwg_effect040'
+        section.innerHTML = `
+          <div class="pin-height">
+            <div class="container">
+              <div class="parent-circle parent-circle-left">
+                <div class="circle"><p class="label">Authentic</p></div>
+                <div class="circle"><p class="label">Certified</p></div>
+                <div class="circle"><p class="label">Original</p></div>
+                <div class="circle"><p class="label">Signed</p></div>
+                <div class="circle"><p class="label">Game Used</p></div>
+                <div class="circle"><p class="label">Limited</p></div>
+                <div class="circle"><p class="label">Graded</p></div>
+                <div class="circle"><p class="label">Premium</p></div>
+                <div class="circle"><p class="label">Rare</p></div>
+                <div class="circle"><p class="label">Iconic</p></div>
+              </div>
+              <div class="parent-circle parent-circle-right">
+                <div class="circle"><img src="../img/TA0288093_1 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/TA0290102_7 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/TA0291354_2480-Edit 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/TA0291447_2448-Edit 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/TA0294013_A 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/TA0294014_1 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/TA0294020_A 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/WEB_TR00142086_A 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/Case_11-min 1.png" alt="" class="media"></div>
+                <div class="circle"><img src="../img/IMG01 1.png" alt="" class="media"></div>
+              </div>
+            </div>
+          </div>
+        `
+        document.body.insertBefore(section, document.getElementById('nav'))
+        this._section = section
+
+        ScrollTrigger.refresh()
+
+        const leftCircle  = section.querySelector('.parent-circle-left')
+        const leftItems   = leftCircle.querySelectorAll('.circle')
+        const rightCircle = section.querySelector('.parent-circle-right')
+        const rightItems  = rightCircle.querySelectorAll('.circle')
+        const angle       = 14
+        const pinHeight   = section.querySelector('.pin-height')
+        const container   = section.querySelector('.container')
+
+        leftItems.forEach((el, i) => {
+          gsap.set(el, { rotation: i * angle })
+          gsap.set(el.querySelector('p'), { rotation: -i * angle })
+        })
+        rightItems.forEach((el, i) => {
+          gsap.set(el, { rotation: i * angle })
+          gsap.set(el.querySelector('.media'), { rotation: -i * angle })
+        })
+
+        const totalRot = 180 + angle * leftItems.length
+
+        const t1 = gsap.to(leftCircle, {
+          rotation: -totalRot, ease: 'none',
+          scrollTrigger: { trigger: pinHeight, pin: container, start: 'top top', end: 'bottom bottom', scrub: true },
+        })
+        const t2 = gsap.to(leftCircle.querySelectorAll('p'), {
+          rotation: `+=${totalRot}`, ease: 'none',
+          scrollTrigger: { trigger: pinHeight, start: 'top top', end: 'bottom bottom', scrub: true },
+        })
+        const t3 = gsap.to(rightCircle, {
+          rotation: -totalRot, ease: 'none',
+          scrollTrigger: { trigger: pinHeight, start: 'top top', end: 'bottom bottom', scrub: true },
+        })
+        const t4 = gsap.to(rightCircle.querySelectorAll('.media'), {
+          rotation: `+=${totalRot}`, ease: 'none',
+          scrollTrigger: { trigger: pinHeight, start: 'top top', end: 'bottom bottom', scrub: true },
+        })
+
+        this._tweens = [t1, t2, t3, t4]
+      },
+
+      destroy() {
+        if (this._tweens) this._tweens.forEach(t => {
+          if (t.scrollTrigger) t.scrollTrigger.kill()
+          t.kill()
+        })
+        if (this._section) this._section.remove()
+
+        window.scrollTo(0, 0)
+        document.getElementById('stage').style.display = ''
+        document.body.style.overflow = ''
+        document.body.classList.remove('theme-dark')
+
+        if (this._medias) this._medias.forEach(el => { el.style.visibility = '' })
+        this._section = this._medias = this._tweens = null
+      },
+    },
+
+    // ── 05 INFINITE CIRCULAR ──────────────────────────────────────────────────
+    {
+      name: 'Circular',
+
+      init(medias) {
+        this._medias = medias
+        medias.forEach(el => { el.style.visibility = 'hidden' })
+
+        document.getElementById('stage').style.display = 'none'
+        document.body.classList.add('theme-dark')
+
+        const imgs = [
+          '../img/TA0288093_1 1.png',
+          '../img/TA0290102_7 1.png',
+          '../img/TA0291354_2480-Edit 1.png',
+          '../img/TA0291447_2448-Edit 1.png',
+          '../img/TA0294013_A 1.png',
+          '../img/TA0294014_1 1.png',
+          '../img/TA0294020_A 1.png',
+          '../img/WEB_TR00142086_A 1.png',
+          '../img/Case_11-min 1.png',
+          '../img/IMG01 1.png',
+          '../img/65156f23-c426-4d9d-b05e-6e7f16da4d3d 1.png',
+          '../img/9503b1e3-b194-422a-b9a0-3e3fddcdea04 1.png',
+          '../img/TA0291289_811-Edit 1.png',
+          '../img/TA0291293_867-Edit 1.png',
+        ]
+        const allImgs = [...imgs, ...imgs]
+
+        const section = document.createElement('section')
+        section.className = 'mwg_effect023'
+        section.innerHTML = `
+          <div class="header">
+            <p>From the Court</p>
+            <p>The Realest</p>
+            <p>To the Collection</p>
+          </div>
+          <div class="container">
+            ${allImgs.map(src => `
+              <div class="inner-media">
+                <img class="media" src="${src}" />
+              </div>`).join('')}
+          </div>
+        `
+        document.body.insertBefore(section, document.getElementById('nav'))
+        this._section = section
+
+        const container    = section.querySelector('.container')
+        const innerMedias  = section.querySelectorAll('.inner-media')
+        const mediasTotal  = innerMedias.length
+        this._container = container
+
+        gsap.set(section.querySelectorAll('.media'), { yPercent: -50 })
+
+        innerMedias.forEach((el, i) => {
+          el.classList.add('media-' + (Math.floor(Math.random() * 3) + 1))
+          gsap.set(el, { rotation: (360 / mediasTotal) * i })
+        })
+
+        const rotTo = gsap.quickTo(container, 'rotation', { duration: 0.8, ease: 'power4' })
+        const yTo1  = gsap.quickTo(section.querySelectorAll('.media-1 .media'), 'yPercent', { duration: 1, ease: 'power3' })
+        const yTo2  = gsap.quickTo(section.querySelectorAll('.media-2 .media'), 'yPercent', { duration: 2, ease: 'power3' })
+        const yTo3  = gsap.quickTo(section.querySelectorAll('.media-3 .media'), 'yPercent', { duration: 3, ease: 'power3' })
+
+        let incr = 0
+        const onWheel = (e) => {
+          incr -= e.deltaY / 40
+          rotTo(incr)
+          const val = -Math.abs(e.deltaY / 4) - 50
+          yTo1(val); yTo2(val); yTo3(val)
+        }
+        window.addEventListener('wheel', onWheel, { passive: true })
+        this._offWheel = () => window.removeEventListener('wheel', onWheel)
+      },
+
+      destroy() {
+        if (this._offWheel) this._offWheel()
+        if (this._section) {
+          gsap.killTweensOf(this._container)
+          gsap.killTweensOf(Array.from(this._section.querySelectorAll('.media')))
+          this._section.remove()
+        }
+        document.getElementById('stage').style.display = ''
+        document.body.classList.remove('theme-dark')
+        if (this._medias) this._medias.forEach(el => { el.style.visibility = '' })
+        this._section = this._medias = this._offWheel = this._container = null
+      },
+    },
+
+    // ── 06 IMAGE SCROLL FLOW ──────────────────────────────────────────────────
+    {
+      name: 'Scroll Flow',
+
+      init(medias) {
+        this._medias = medias
+        medias.forEach(el => { el.style.visibility = 'hidden' })
+
+        // Enable body scroll and hide stage
+        document.getElementById('stage').style.display = 'none'
+        document.body.style.overflow = 'auto'
+
+        const section = document.createElement('section')
+        section.className = 'mwg_effect072'
+        section.innerHTML = `
+          <p class="scroll">Scroll</p>
+          <div class="pin-height">
+            <div class="container">
+              <img class="media" src="../img/TA0288093_1 1.png" alt="">
+              <img class="media" src="../img/TA0290102_7 1.png" alt="">
+              <img class="media" src="../img/TA0291354_2480-Edit 1.png" alt="">
+              <img class="media" src="../img/TA0291447_2448-Edit 1.png" alt="">
+              <img class="media" src="../img/TA0294013_A 1.png" alt="">
+              <img class="media" src="../img/TA0294014_1 1.png" alt="">
+              <img class="media" src="../img/TA0294020_A 1.png" alt="">
+              <img class="media" src="../img/WEB_TR00142086_A 1.png" alt="">
+              <img class="media" src="../img/Case_11-min 1.png" alt="">
+              <img class="media" src="../img/IMG01 1.png" alt="">
+              <img class="media" src="../img/65156f23-c426-4d9d-b05e-6e7f16da4d3d 1.png" alt="">
+              <img class="media" src="../img/9503b1e3-b194-422a-b9a0-3e3fddcdea04 1.png" alt="">
+              <img class="media" src="../img/TA0291289_811-Edit 1.png" alt="">
+              <img class="media" src="../img/TA0291293_867-Edit 1.png" alt="">
+              <img class="media" src="../img/d08c6b10-8e6a-4019-af15-6f80f5e8dcae 1.png" alt="">
+              <img class="media" src="../img/0f6af803-c2e7-4652-a3a2-ccb0907f6625 1.png" alt="">
+              <img class="media" src="../img/61b811b8-fabc-4e56-affd-aed4ff252d93 1.png" alt="">
+              <img class="media" src="../img/93124b3d-0b31-4f12-b886-030a57d2b975 1.png" alt="">
+            </div>
+          </div>
+        `
+        document.body.insertBefore(section, document.getElementById('nav'))
+        this._section = section
+
+        ScrollTrigger.refresh()
+
+        const pinHeight  = section.querySelector('.pin-height')
+        const container  = section.querySelector('.container')
+        const sMedias    = section.querySelectorAll('.media')
+
+        const st1 = ScrollTrigger.create({
+          trigger: pinHeight,
+          start: 'top top',
+          end: 'bottom bottom',
+          pin: container,
+        })
+
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: pinHeight,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: true,
+          },
+          defaults: { stagger: 0.1 },
+        })
+
+        tl.to(sMedias, {
+          xPercent: 100,
+          x: (window.innerWidth > 500) ? (-1 * document.body.clientWidth) : (-1.5 * document.body.clientWidth),
+          ease: 'none',
+          duration: 1,
+        })
+        tl.to(sMedias, {
+          yPercent: () => (Math.random() - 0.5) * 160,
+          scale: 1,
+          duration: 0.5,
+          ease: 'power1.inOut',
+        }, '<')
+        tl.to(sMedias, {
+          yPercent: 0,
+          scale: 0,
+          duration: 0.5,
+          ease: 'power1.inOut',
+        }, '<+=0.5')
+
+        this._st1 = st1
+        this._tl  = tl
+      },
+
+      destroy() {
+        if (this._tl) {
+          if (this._tl.scrollTrigger) this._tl.scrollTrigger.kill()
+          this._tl.kill()
+        }
+        if (this._st1) this._st1.kill()
+        if (this._section) this._section.remove()
+
+        window.scrollTo(0, 0)
+        document.getElementById('stage').style.display = ''
+        document.body.style.overflow = ''
+
+        if (this._medias) this._medias.forEach(el => { el.style.visibility = '' })
+        this._section = this._medias = this._tl = this._st1 = null
+      },
+    },
+
+    // ── ADD CONFIGS BELOW ─────────────────────────────────────────────────────
+
+  ]
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ENGINE
+  // ─────────────────────────────────────────────────────────────────────────────
+  const stage  = document.getElementById('stage')
+  const nav    = document.getElementById('nav')
+  const medias = Array.from(stage.querySelectorAll('.media'))
+  let active   = -1
+
+  function loadConfig(index) {
+    if (active !== -1) {
+      CONFIGS[active].destroy()
+      medias.forEach(el => gsap.set(el, { clearProps: 'all' }))
+    }
+    active = index
+    CONFIGS[index].init(medias)
+    nav.querySelectorAll('.nav-btn').forEach((btn, i) => btn.classList.toggle('active', i === index))
+  }
+
+  CONFIGS.forEach((cfg, i) => {
+    const btn = document.createElement('button')
+    btn.className = 'nav-btn'
+    btn.textContent = cfg.name
+    btn.addEventListener('click', () => loadConfig(i))
+    nav.appendChild(btn)
+  })
+
+  loadConfig(0)
+  </script>
+
+</body>
+</html>

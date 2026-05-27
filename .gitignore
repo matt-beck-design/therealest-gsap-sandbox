@@ -1,0 +1,27 @@
+# Node
+node_modules/
+package-lock.json
+package.json
+
+# OS
+.DS_Store
+
+# Claude
+.claude/
+
+# Source folders not needed for the sandbox
+HeroCarousel.tsx
+HeroCollection.tsx
+hero-carousel.html
+hero-collection.html
+hero-footer.html
+hero-sandbox.html
+hero-scroll.html
+
+# Unused sandbox reference folders
+sandbox-ideas/3D\ Sphere/
+sandbox-ideas/Double\ Circular\ Carousel/
+sandbox-ideas/Image\ Scroll\ Flow/
+sandbox-ideas/Infinite\ Circular\ Movement/
+sandbox-ideas/Letter\ Image\ Swap/
+sandbox-ideas/Orbital\ Scroll\ Gallery/
